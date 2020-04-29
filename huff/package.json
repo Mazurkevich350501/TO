@@ -1,0 +1,14 @@
+{
+  "name": "labs",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node -r esm huff.js"
+  },
+  "private": true,
+  "dependencies": {
+    "esm": "^3.2.25",
+    "node-bitarray": "^0.1.0"
+  }
+}
