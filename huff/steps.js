@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import {Files} from './files';
-
+import {constants} from './constants';
 
 const getFrequencyArray = (fileContent) => {
     const length = fileContent.length;
@@ -41,99 +41,81 @@ const getHuffmanTree = (frequencyArray) => {
 }
 
 
-const getSymbolToKeyMap = (huffmanTree) => {
+const getSymbolToKeyMapAndWriteHuffmanTreeToBuffer = (huffmanTree, buffer) => {
     const result = {};
     const makeNewWave = (node, {key, size}) => {
         if (node.symbol) {
-            result[node.symbol] = {key, size};
+            result[node.symbol] = {key, size: size || 1};
+            console.log(`1'${node.symbol}|${node.symbol.charCodeAt(0).toString(2).padStart(8, '0')}'`)
+            buffer.appendBufferAndSaveIfFull({key: 1, size: 1});
+            buffer.appendBufferAndSaveIfFull({key: node.symbol.charCodeAt(0), size: buffer.bufferNodeSize});
         } else {
+            console.log(`0`)
+            buffer.appendBufferAndSaveIfFull({key: 0, size: 1});
             makeNewWave(node[0], {key: key << 1, size: size + 1});
             makeNewWave(node[1], {key: key << 1 | 1, size: size + 1});
         }
     } 
 
     makeNewWave(huffmanTree, {key: 0, size: 0});
+    console.log(result);
     return result
 }
 
-const toBinaryAndWriteToFile = (fileContent, symbolToKeyMap, oFile) => {
-    let needToAppend = false;
-    const bufferSize = 1000000;
-    const bufferNodeSize = 8;
-    const buffer = new Int8Array(bufferSize);
-    let bufferIndex = 0;
-    let byteShift = 0;
-    
+const toBinaryAndWriteToFile = (fileContent, symbolToKeyMap, buffer) => {
     const length = fileContent.length;
-
-    const fd = fs.openSync(oFile, 'w');
-    fs.writeFileSync(fd, '');
-
-    const appendToFile = () => {
-        const bufferToWrite = !bufferSize
-            ? buffer
-            : buffer.slice(0, bufferIndex + 1);
-            
-        Files.writeBinary(oFile, Buffer.from(bufferToWrite.buffer));
-        needToAppend = false;
-    }
-
-    const incBufferIndexAndSaveIfFull = () => {
-        bufferIndex = bufferIndex < bufferSize - 1
-            ? bufferIndex + 1
-            : 0;
-        
-        if (!bufferIndex) {
-            appendToFile();
-        }
-
-        buffer[bufferIndex] = 0;
-    }
-
-    const appendBufferAndSaveIfFull = ({key, size}) => {
-        needToAppend = true;
-        let keyChanged = key;
-        let sizeChanged = size;
-
-        while(true) {
-            if (sizeChanged === 0) {
-                return;
-            }
-
-            if (sizeChanged <= bufferNodeSize - byteShift) {
-                buffer[bufferIndex] = buffer[bufferIndex] | (keyChanged << byteShift)
-                byteShift += sizeChanged;
-                if (byteShift === bufferNodeSize) {
-                    byteShift = 0;
-                    incBufferIndexAndSaveIfFull();
-                }
-                return;
-            } else {
-                sizeChanged = sizeChanged - (bufferNodeSize - byteShift);
-                buffer[bufferIndex] = buffer[bufferIndex] | (keyChanged << byteShift)
-                keyChanged >>> byteShift;
-                byteShift = 0;
-                incBufferIndexAndSaveIfFull();
-            }
-        }        
-    }
-
     for (let i = 0; i < length; i++) {
         const symbol = fileContent.charAt(i);
         const key = symbolToKeyMap[symbol];
-        appendBufferAndSaveIfFull(key);
+        buffer.appendBufferAndSaveIfFull(key);
     }
-
-    if (needToAppend) {
-        appendToFile();
-    }
-
-    fs.closeSync(fd);
 }
 
-export const Steps = {
+const reserveHeader = (buffer) => {
+    buffer.appendBufferAndSaveIfFull({key: 255, size: constants.headerSize * buffer.bufferNodeSize});
+}
+
+const writeBufferAppendixAndHeader = (buffer, streamFileWriter, treeHeader) => {
+    if (buffer.hasValue) {
+        const bufferToWrite = buffer.buffer.slice(0, buffer.bufferIndex + 1)
+        console.log('buffer', bufferToWrite);
+        streamFileWriter.writeToFile(bufferToWrite);
+    }
+
+    // const header = Buffer.from([buffer.getByteAppendixLength()]);
+    // streamFileWriter.writeToFilePosition(0, header);
+}
+
+export const CompressorSteps = {
     getFrequencyArray,
     getHuffmanTree,
-    getSymbolToKeyMap,
+    getSymbolToKeyMapAndWriteHuffmanTreeToBuffer,
     toBinaryAndWriteToFile,
+    writeBufferAppendixAndHeader,
+    reserveHeader,
+}
+
+const getSymbolToKey = (binaryReader, header) => {
+    const result = {};
+    let key = 0;
+    let keySize = 0;
+    do {
+        const bit = binaryReader.readBitAndIterate()
+        if (!bit) {
+            key <<= 1;
+            keySize += 1;
+        } else {
+            const byte = binaryReader.readByteAndIterate();
+            const symbol = String.fromCharCode(byte);
+            result[symbol] = {key, size: keySize };
+            while (key & 1) {key >>>= 1; keySize -= 1;}
+            key |= 1;
+        }
+    } while (keySize)
+
+    return result
+}
+
+export const DecompressorSteps = {
+    getSymbolToKey,
 }

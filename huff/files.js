@@ -25,6 +25,25 @@ const getFileSize = (fileName) => {
     return stats.size;
 }
 
+const getStreamFileWriter = (fileName) => {
+    const fd = fs.openSync(fileName, 'w');
+    fs.writeFileSync(fd, '');
+
+    return {
+        writeToFile: (buffer) => {
+            console.log('writeToFile', fd);
+
+            fs.appendFileSync(fileName, Buffer.from(buffer.buffer));
+        },
+        writeToFilePosition: (position, buffer) => {
+            fs.writeSync(fd, buffer, 0, buffer.length, position);
+        },
+        closeFile: () => {
+            fs.closeSync(fd)
+        },
+    }
+}
+
 export const Files = {
     getText,
     writeText,
@@ -32,4 +51,5 @@ export const Files = {
     writeBinary,
     appendToFile,
     getFileSize,
+    getStreamFileWriter,
 }
