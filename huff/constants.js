@@ -1,3 +1,3 @@
 export const constants = {
-    headerSize: 1,
+    headerBitSize: 3,
 }

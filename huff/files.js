@@ -31,8 +31,6 @@ const getStreamFileWriter = (fileName) => {
 
     return {
         writeToFile: (buffer) => {
-            console.log('writeToFile', fd);
-
             fs.appendFileSync(fileName, Buffer.from(buffer.buffer));
         },
         writeToFilePosition: (position, buffer) => {

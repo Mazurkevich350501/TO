@@ -13,12 +13,11 @@ const compress = (iFile, oFile) => {
     const tree = CompressorSteps.getHuffmanTree(frequencyArray);
     
     const buffer = new BinaryBuffer(12, streamFileWriter.writeToFile);
-    // CompressorSteps.reserveHeader(buffer);
+    CompressorSteps.reserveHeader(buffer);
     const symbolToKeyMap = CompressorSteps.getSymbolToKeyMapAndWriteHuffmanTreeToBuffer(tree, buffer);
 
     CompressorSteps.toBinaryAndWriteToFile(file, symbolToKeyMap, buffer);
     CompressorSteps.writeBufferAppendixAndHeader(buffer, streamFileWriter);
-    console.log(buffer.buffer);
 
     streamFileWriter.closeFile();
 }

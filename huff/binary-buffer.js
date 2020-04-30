@@ -29,8 +29,6 @@ export class BinaryBuffer {
             if (sizeChanged === 0) {
                 return;
             }
-            // console.log('key', keyChanged, 'size', sizeChanged, 'byteShift', this.byteShift)
-    
             if (sizeChanged <= this.bufferNodeSize - this.byteShift) {
                 this.buffer[this.bufferIndex] = this.buffer[this.bufferIndex] | (keyChanged << this.byteShift)
                 this.byteShift += sizeChanged;
@@ -38,8 +36,6 @@ export class BinaryBuffer {
                     this.byteShift = 0;
                     this.incBufferIndexAndSaveIfFull();
                 }
-                // console.log('if', this.buffer)
-
                 return;
             } else {
                 sizeChanged = sizeChanged - (this.bufferNodeSize - this.byteShift);
@@ -47,7 +43,6 @@ export class BinaryBuffer {
                 keyChanged >>>= (this.bufferNodeSize - this.byteShift);
                 this.byteShift = 0;
                 this.incBufferIndexAndSaveIfFull();
-                // console.log('~~', this.buffer)
             }
         }    
     }
