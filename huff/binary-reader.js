@@ -1,12 +1,13 @@
 import * as fs from 'fs';
-import {constants} from './constants';
+import {getBufferSize} from './buffer-size-helper';
 import {Files} from './files';
+
 
 export class BinaryReader {
     byteMask = parseInt('11111111', 2);
     fileSize = 0;
     byteAppendixSize = 0;
-    bufferSize = 100000;
+    bufferSize = 0;
     bufferNodeSize = 8;
     buffer = null;
     readIndex = 0;
@@ -16,12 +17,12 @@ export class BinaryReader {
 
     constructor (fileName) {
         this.fileSize = Files.getFileSize(fileName);
+        this.bufferSize = getBufferSize(this.fileSize);
         if (!this.fileSize) return;
         this.fd = fs.openSync(fileName, 'r');
         this.buffer = Buffer.alloc(this.bufferSize);
         fs.readSync(this.fd, this.buffer, 0, this.bufferSize, 0);
         this.byteAppendixSize = this.getHeader().byteAppendixSize;
-        console.log('this.byteAppendixSize', this.byteAppendixSize)
     }
 
     getHeader() {
@@ -51,7 +52,7 @@ export class BinaryReader {
 
     readFromFileIfNeeded() {
         if (this.readIndex + 2 === this.bufferSize && this.prevReadSize < this.fileSize - this.bufferSize) {
-            this.prevReadSize += (this.readIndex - 1);
+            this.prevReadSize += (this.readIndex);
             fs.readSync(this.fd, this.buffer, 0, this.bufferSize, this.prevReadSize);
             this.readIndex = 0;
         }

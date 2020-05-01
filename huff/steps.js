@@ -49,11 +49,9 @@ const getSymbolToKeyMapAndWriteHuffmanTreeToBuffer = (huffmanTree, buffer) => {
     const makeNewWave = (node, {key, size}) => {
         if (node.symbol) {
             result[node.symbol] = {key, size: size || 1};
-            console.log(1, node.symbol, node.symbol.charCodeAt(0));
             buffer.appendBufferAndSaveIfFull({key: 1, size: 1});
             buffer.appendBufferAndSaveIfFull({key: node.symbol.charCodeAt(0), size: buffer.bufferNodeSize});
         } else {
-            console.log(0);
             buffer.appendBufferAndSaveIfFull({key: 0, size: 1});
             makeNewWave(node[0], {key: key, size: size + 1});
             makeNewWave(node[1], {key: 1 << size | key, size: size + 1});
@@ -107,11 +105,9 @@ const getKeyToSymbol = (binaryReader, header) => {
     do {
         const bit = binaryReader.readBitAndIterate()
         if (!bit) {
-            console.log(bit)
             keySize += 1;
         } else {
             const byte = binaryReader.readByteAndIterate();
-            console.log(bit, byte, key.toString(2).padStart(keySize, '0'))
             const symbol = byte;
             appendLeyToSymbol(result, key, keySize || 1, symbol);
             while (key & (1 << (keySize - 1))) {keySize -= 1;}
