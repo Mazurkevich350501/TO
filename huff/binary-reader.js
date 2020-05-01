@@ -6,7 +6,7 @@ export class BinaryReader {
     byteMask = parseInt('11111111', 2);
     fileSize = 0;
     byteAppendixSize = 0;
-    bufferSize = 100;
+    bufferSize = 100000;
     bufferNodeSize = 8;
     buffer = null;
     readIndex = 0;
@@ -21,6 +21,7 @@ export class BinaryReader {
         this.buffer = Buffer.alloc(this.bufferSize);
         fs.readSync(this.fd, this.buffer, 0, this.bufferSize, 0);
         this.byteAppendixSize = this.getHeader().byteAppendixSize;
+        console.log('this.byteAppendixSize', this.byteAppendixSize)
     }
 
     getHeader() {

@@ -15,9 +15,17 @@ const compress = (iFile, oFile) => {
     const buffer = new BinaryBuffer(12, streamFileWriter.writeToFile);
     CompressorSteps.reserveHeader(buffer);
     const symbolToKeyMap = CompressorSteps.getSymbolToKeyMapAndWriteHuffmanTreeToBuffer(tree, buffer);
+    console.log(Object.keys(symbolToKeyMap).reduce((r, x) => {
+        if (!(symbolToKeyMap[x].size in r)) {
+            r[symbolToKeyMap[x].size] = {};
+        }
+        r[symbolToKeyMap[x].size][symbolToKeyMap[x].key] = x.charCodeAt(0);
+        return r;
+    }, {}));
 
     CompressorSteps.toBinaryAndWriteToFile(file, symbolToKeyMap, buffer);
     CompressorSteps.writeBufferAppendixAndHeader(buffer, streamFileWriter);
+    console.log(buffer.getByteAppendixLength())
 
     streamFileWriter.closeFile();
 }

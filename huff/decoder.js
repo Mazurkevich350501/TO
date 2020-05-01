@@ -12,20 +12,19 @@ const buffer = new BinaryBuffer(120, streamFileWriter.writeToFile);
 
 let size = 0;
 let key = 0;
-
+console.log(map)
 while (true) {
     const bit = reader.readBitAndIterate();
     if (bit === null) {
         break;
     }
-    key = (key << size++) | bit
+    key = bit << size ++ | key;
     if (map[size] && map[size][key]) {
         map[size][key];
         buffer.appendBufferAndSaveIfFull({key: map[size][key], size: buffer.bufferNodeSize});
         key = size = 0;
     }
 }
-console.log(buffer.getByteAppendixLength())
 
 if (buffer.hasValue) {
     const bufferToWrite = buffer.buffer.slice(0, buffer.bufferIndex)
