@@ -7,7 +7,7 @@ const [
     oFile,
 ] = process.argv.slice(2);
 
-console.time('execution time');
+console.time('time');
 switch (command) {
     case '-c': compressor.compress(iFile, oFile);
         break;
@@ -16,10 +16,10 @@ switch (command) {
 }
 
 
-console.timeEnd('execution time');
+console.timeEnd('time');
 
 const sizeBefore = Files.getFileSize(iFile);
 const sizeAfter = Files.getFileSize(oFile);
-console.log('size before:', sizeBefore);
-console.log('size after:', sizeAfter);
+// console.log('size before:', sizeBefore);
+// console.log('size after:', sizeAfter);
 console.log('compression:', sizeBefore / sizeAfter);

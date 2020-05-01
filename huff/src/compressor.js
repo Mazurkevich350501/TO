@@ -6,7 +6,7 @@ import { getBufferSize } from './buffer-size-helper';
 
 
 const compress = (iFile, oFile) => {
-    const file = Files.getText(iFile);
+    const file = Files.getBinary(iFile);
 
     const frequencyArray = CompressorSteps.getFrequencyArray(file);
     if (!frequencyArray.length) {
@@ -21,6 +21,7 @@ const compress = (iFile, oFile) => {
     const buffer = new BinaryBuffer(getBufferSize(fileSize), streamFileWriter.writeToFile);
     CompressorSteps.reserveHeader(buffer);
     const symbolToKeyMap = CompressorSteps.getSymbolToKeyMapAndWriteHuffmanTreeToBuffer(tree, buffer);
+    // console.log(symbolToKeyMap)
 
     CompressorSteps.toBinaryAndWriteToFile(file, symbolToKeyMap, buffer);
     CompressorSteps.writeBufferAppendixAndHeader(buffer, streamFileWriter);
@@ -32,11 +33,11 @@ const decompress = (iFile, oFile) => {
     const reader = new BinaryReader(iFile);
     if (reader.fileSize < 2) {
         Files.writeText(oFile, '');
-        reader.
+        reader.close()
         return;
     }
     const map = DecompressorSteps.getKeyToSymbol(reader);
-
+    // console.log(map);
     const streamFileWriter = Files.getStreamFileWriter(oFile);
     const buffer = new BinaryBuffer(reader.bufferSize, streamFileWriter.writeToFile);
 
@@ -48,7 +49,7 @@ const decompress = (iFile, oFile) => {
             break;
         }
         key = bit << size ++ | key;
-        if (map[size] && map[size][key]) {
+        if (map[size] && key in map[size]) {
             map[size][key];
             buffer.appendBufferAndSaveIfFull({key: map[size][key], size: buffer.bufferNodeSize});
             key = size = 0;
@@ -61,7 +62,6 @@ const decompress = (iFile, oFile) => {
     }
 
     streamFileWriter.closeFile();
-
 }
 
 export const compressor = {

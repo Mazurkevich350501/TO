@@ -25,6 +25,10 @@ export class BinaryReader {
         this.byteAppendixSize = this.getHeader().byteAppendixSize;
     }
 
+    close() {
+        // fs.closeSync(this.fd);
+    }
+
     getHeader() {
         const byteAppendixSize = this.readByteAndIterate();
         return {byteAppendixSize};
