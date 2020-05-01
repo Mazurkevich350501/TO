@@ -67,7 +67,7 @@ export class BinaryReader {
         this.readByteShift = newReadByteShift % this.bufferNodeSize;
     }
 
-    canRead(bitsCount) {
+    canRead() {
         return this.prevReadSize + this.readIndex + (this.readByteShift + this.byteAppendixSize) / 8 < this.fileSize;
     }
 }

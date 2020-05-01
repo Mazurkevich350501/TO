@@ -9,7 +9,11 @@ const compress = (iFile, oFile) => {
     const file = Files.getText(iFile);
 
     const frequencyArray = CompressorSteps.getFrequencyArray(file);
-    
+    if (!frequencyArray.length) {
+        Files.writeBinary(oFile, Buffer.alloc(0));
+        return;
+    }
+
     const streamFileWriter = Files.getStreamFileWriter(oFile);
     const tree = CompressorSteps.getHuffmanTree(frequencyArray);
     
@@ -26,6 +30,11 @@ const compress = (iFile, oFile) => {
 
 const decompress = (iFile, oFile) => {
     const reader = new BinaryReader(iFile);
+    if (reader.fileSize < 2) {
+        Files.writeText(oFile, '');
+        reader.
+        return;
+    }
     const map = DecompressorSteps.getKeyToSymbol(reader);
 
     const streamFileWriter = Files.getStreamFileWriter(oFile);
